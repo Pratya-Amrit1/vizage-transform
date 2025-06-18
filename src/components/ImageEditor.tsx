@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Download, Undo, Redo, RotateCcw } from 'lucide-react';
+import { Camera, Upload, Download, Undo, Redo, RotateCcw, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ImageCanvas from './ImageCanvas';
 import FilterControls from './FilterControls';
@@ -136,33 +135,51 @@ const ImageEditor = () => {
 
   const handleDownload = () => {
     if (canvasRef.current) {
-      const link = document.createElement('a');
-      link.download = `edited-image-${Date.now()}.png`;
-      link.href = canvasRef.current.toDataURL();
-      link.click();
-      toast({
-        title: "Image downloaded",
-        description: "Your processed image has been saved",
-      });
+      try {
+        const canvas = canvasRef.current;
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        link.download = `vizage-edited-${timestamp}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        
+        // Add animation to the download button
+        const downloadBtn = document.querySelector('[data-download-btn]');
+        if (downloadBtn) {
+          downloadBtn.classList.add('animate-pulse');
+          setTimeout(() => downloadBtn.classList.remove('animate-pulse'), 1000);
+        }
+        
+        link.click();
+        toast({
+          title: "✨ Image saved successfully!",
+          description: "Your processed image has been downloaded",
+        });
+      } catch (error) {
+        toast({
+          title: "Download failed",
+          description: "There was an error saving your image",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Action Buttons */}
-      <Card className="p-6 bg-white/10 backdrop-blur-sm border-white/20">
+      <Card className="p-6 bg-white/10 backdrop-blur-md border-white/20 shadow-2xl animate-fade-in hover:bg-white/15 transition-all duration-300">
         <div className="flex flex-wrap gap-4 justify-center">
           <Button
             onClick={() => fileInputRef.current?.click()}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-4 h-4 mr-2 animate-bounce" />
             Upload Image
           </Button>
           
           <Button
             onClick={() => setShowCamera(true)}
-            className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+            className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             <Camera className="w-4 h-4 mr-2" />
             Take Photo
@@ -174,7 +191,7 @@ const ImageEditor = () => {
                 onClick={handleUndo}
                 disabled={currentHistoryIndex <= 0}
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/30 text-white hover:bg-white/10 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Undo className="w-4 h-4 mr-2" />
                 Undo
@@ -184,7 +201,7 @@ const ImageEditor = () => {
                 onClick={handleRedo}
                 disabled={currentHistoryIndex >= history.length - 1}
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/30 text-white hover:bg-white/10 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Redo className="w-4 h-4 mr-2" />
                 Redo
@@ -193,7 +210,7 @@ const ImageEditor = () => {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/30 text-white hover:bg-white/10 transform hover:scale-105 transition-all duration-200"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
@@ -201,10 +218,11 @@ const ImageEditor = () => {
 
               <Button
                 onClick={handleDownload}
-                className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700"
+                data-download-btn
+                className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl animate-pulse"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download
+                Save Image
               </Button>
             </>
           )}
@@ -214,8 +232,8 @@ const ImageEditor = () => {
       {/* Main Editor Area */}
       <div className="grid lg:grid-cols-4 gap-6">
         {/* Image Canvas */}
-        <div className="lg:col-span-3">
-          <Card className="p-6 bg-white/10 backdrop-blur-sm border-white/20">
+        <div className="lg:col-span-3 animate-scale-in">
+          <Card className="p-6 bg-white/10 backdrop-blur-md border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300">
             <ImageCanvas
               ref={canvasRef}
               imageData={currentImage}
@@ -225,7 +243,7 @@ const ImageEditor = () => {
         </div>
 
         {/* Filter Controls */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 animate-slide-in-right delay-300">
           <FilterControls
             filters={filters}
             onFiltersChange={handleFilterChange}
@@ -236,10 +254,20 @@ const ImageEditor = () => {
 
       {/* Camera Modal */}
       {showCamera && (
-        <CameraCapture
-          onCapture={handleImageLoad}
-          onClose={() => setShowCamera(false)}
-        />
+        <div className="animate-fade-in">
+          <CameraCapture
+            onCapture={handleImageLoad}
+            onClose={() => setShowCamera(false)}
+          />
+        </div>
+      )}
+
+      {/* Enhanced Loading State */}
+      {!currentImage && (
+        <div className="text-center py-12 animate-pulse">
+          <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4 animate-spin" />
+          <p className="text-white/70 text-lg">Ready to transform your images</p>
+        </div>
       )}
 
       {/* Hidden File Input */}
