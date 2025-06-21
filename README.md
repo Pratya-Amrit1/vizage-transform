@@ -1,6 +1,6 @@
 <!-- Banner Image -->
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/1004211590/29241894-visual-app-banner.png" alt="Vizage Transform Banner" width="80%" />
+  <img src="/public/fevicon_vizage.ico" alt="Vizage Transform Banner" width="80%" />
 </p>
 
 <h1 align="center">🖼️ Vizage Transform</h1>
